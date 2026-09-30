@@ -6,94 +6,202 @@
 <meta name="theme-color" content="#0b0f19">
 <title>ForestryOS • Gửi vị trí GPS</title>
 <style>
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0b0f19;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}.wrap{width:100%;max-width:460px}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#0b0f19;color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+.wrap{width:100%;max-width:460px}
 .card{border-radius:28px;padding:24px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);box-shadow:0 24px 70px rgba(0,0,0,.35);backdrop-filter:blur(18px)}
 .icon{width:72px;height:72px;margin:0 auto 16px;display:grid;place-items:center;border-radius:22px;background:rgba(34,197,94,.14);font-size:34px}
-h1{margin:0;text-align:center;font-size:25px}.sub{text-align:center;color:#94a3b8;margin-top:8px}
+h1{margin:0;text-align:center;font-size:25px}
+.sub{text-align:center;color:#94a3b8;margin-top:8px}
 .hint{margin-top:18px;padding:14px;border-radius:16px;background:rgba(255,255,255,.045);color:#cbd5e1;line-height:1.55;font-size:14px}
 button{width:100%;margin-top:20px;border:0;border-radius:17px;padding:17px;background:#16a34a;color:#fff;font-size:18px;font-weight:800}
-button:disabled{opacity:.55}.status{margin-top:16px;min-height:52px;padding:14px;border-radius:15px;background:rgba(255,255,255,.05);color:#cbd5e1;line-height:1.5;text-align:center}
+button:disabled{opacity:.55}
+.status{margin-top:16px;min-height:52px;padding:14px;border-radius:15px;background:rgba(255,255,255,.05);color:#cbd5e1;line-height:1.5;text-align:center}
 .result{display:none;margin-top:16px;border-radius:18px;padding:16px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.22)}
-.row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}.row:last-child{border:0}
+.row{display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+.row:last-child{border:0}
 .k{color:#94a3b8}.v{text-align:right;font-weight:700;overflow-wrap:anywhere}
 .map{display:block;margin-top:12px;padding:12px;text-align:center;text-decoration:none;border-radius:14px;background:rgba(255,255,255,.07);color:#fff;font-weight:700}
-.fallback{display:none;margin-top:12px;padding:12px;border-radius:14px;background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.22);color:#fef3c7;text-align:center;font-size:13px;line-height:1.5}
-.footer{margin-top:16px;text-align:center;color:#64748b;font-size:12px}.spin{display:inline-block;width:16px;height:16px;margin-right:8px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;vertical-align:-3px}
+.return{display:none;width:100%;margin-top:10px;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px;background:rgba(255,255,255,.06);color:#fff;font-size:15px;font-weight:700}
+.footer{margin-top:16px;text-align:center;color:#64748b;font-size:12px}
+.spin{display:inline-block;width:16px;height:16px;margin-right:8px;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;vertical-align:-3px}
 @keyframes s{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<main class="wrap"><section class="card">
-<div class="icon">📍</div><h1>Gửi vị trí GPS</h1><div class="sub">ForestryOS • Tuần tra rừng</div>
+<main class="wrap">
+<section class="card">
+<div class="icon">📍</div>
+<h1>Gửi vị trí GPS</h1>
+<div class="sub">ForestryOS • Tuần tra rừng</div>
 <div class="hint">Hãy bật quyền <b>Vị trí</b> cho trình duyệt khi được hỏi. Trang này lấy GPS từ điện thoại và gửi về hệ thống.</div>
 <button id="btn" type="button">📍 GỬI VỊ TRÍ</button>
 <div id="status" class="status">Sẵn sàng lấy vị trí hiện tại.</div>
+
 <div id="result" class="result">
-<div class="row"><span class="k">Latitude</span><span id="lat" class="v"></span></div>
-<div class="row"><span class="k">Longitude</span><span id="lng" class="v"></span></div>
-<div class="row"><span class="k">Độ chính xác</span><span id="acc" class="v"></span></div>
-<a id="map" class="map" href="#" target="_blank" rel="noopener">🗺 MỞ GOOGLE MAPS</a>
+  <div class="row"><span class="k">Latitude</span><span id="lat" class="v"></span></div>
+  <div class="row"><span class="k">Longitude</span><span id="lng" class="v"></span></div>
+  <div class="row"><span class="k">Độ chính xác</span><span id="acc" class="v"></span></div>
+  <a id="map" class="map" href="#" target="_blank" rel="noopener">🗺 MỞ GOOGLE MAPS</a>
 </div>
-<div id="fallback" class="fallback">✅ Vị trí đã được gửi.<br>Đang đóng trang và quay lại cuộc trò chuyện Bot...</div>
+
+<button id="returnBtn" class="return" type="button">↩️ QUAY LẠI ZALO</button>
 <div class="footer">Không dùng Mini App • Không cần VPS/NAS</div>
-</section></main>
+</section>
+</main>
 
 <script>
 const API_URL='https://script.google.com/macros/s/AKfycbxnmOitglMGheq2AR5UdLmr-dNtsoCLh_PD-v7NMYPbg0EF9VurQy92mT-ccF9PN2VT/exec';
-const token=new URLSearchParams(location.search).get('t')||'';
-const btn=document.getElementById('btn'),statusEl=document.getElementById('status'),resultEl=document.getElementById('result'),fallbackEl=document.getElementById('fallback');
-let navigationStarted=false;
-function st(x){statusEl.innerHTML=x;}
+const qs=new URLSearchParams(location.search);
+const token=qs.get('t')||'';
+const shortCode=qs.get('c')||'';
+
+const btn=document.getElementById('btn');
+const statusEl=document.getElementById('status');
+const resultEl=document.getElementById('result');
+const returnBtn=document.getElementById('returnBtn');
+
+let returning=false;
+
+function st(x){ statusEl.innerHTML=x; }
+
 function showResult(lat,lng,acc){
- document.getElementById('lat').textContent=lat.toFixed(6);
- document.getElementById('lng').textContent=lng.toFixed(6);
- document.getElementById('acc').textContent=Number.isFinite(acc)?acc.toFixed(1)+' m':'Không xác định';
- document.getElementById('map').href='https://www.google.com/maps?q='+encodeURIComponent(lat+','+lng);
- resultEl.style.display='block';
+  document.getElementById('lat').textContent=lat.toFixed(6);
+  document.getElementById('lng').textContent=lng.toFixed(6);
+  document.getElementById('acc').textContent=
+    Number.isFinite(acc)?acc.toFixed(1)+' m':'Không xác định';
+  document.getElementById('map').href=
+    'https://www.google.com/maps?q='+encodeURIComponent(lat+','+lng);
+  resultEl.style.display='block';
 }
-function attemptReturn(){
- if(navigationStarted)return;
- navigationStarted=true;
- st('✅ GPS đã được ghi nhận.<br>Đang quay lại Zalo...');
- fallbackEl.style.display='block';
- let attemptedHistory=false;
- try{
-   if(window.history && window.history.length>1){
-     attemptedHistory=true;
-     window.history.go(-1);
-   }
- }catch(e){}
- setTimeout(function(){
-   try{window.close();}catch(e){}
-   if(document.visibilityState==='visible'){
-     st('✅ Đã gửi vị trí về ForestryOS.<br>Zalo không cho trang web tự đóng webview này.');
-   }
- },attemptedHistory?900:300);
+
+function goBackToZalo(){
+  if (returning) return;
+  returning=true;
+
+  /*
+   * Trong Zalo in-app browser, lịch sử thường chứa màn chat
+   * trước khi mở link. history.back() trả người dùng về Bot.
+   */
+  try{
+    if(history.length > 1){
+      history.back();
+      return;
+    }
+  }catch(e){}
+
+  /*
+   * Fallback: hiện nút thủ công nếu webview không cho back.
+   */
+  returnBtn.style.display='block';
+  st('✅ Đã nhận GPS. Hãy bấm "QUAY LẠI ZALO" nếu trang chưa tự quay lại.');
 }
-function save(position){
- const c=position.coords,lat=Number(c.latitude),lng=Number(c.longitude),acc=Number(c.accuracy);
- showResult(lat,lng,Number.isFinite(acc)?acc:NaN);
- btn.disabled=true;btn.innerHTML='✅ ĐÃ GỬI VỊ TRÍ';st('✅ Đã lấy GPS.<br>Đang gửi về ForestryOS...');
- const body=new URLSearchParams();
- body.set('action','save_location');body.set('token',token);body.set('latitude',String(lat));body.set('longitude',String(lng));body.set('accuracy',String(c.accuracy??''));body.set('altitude',String(c.altitude??''));body.set('heading',String(c.heading??''));body.set('speed',String(c.speed??''));body.set('client_time',new Date().toISOString());body.set('user_agent',navigator.userAgent);
- try{
-   fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:body.toString(),keepalive:true}).catch(function(){});
- }catch(e){}
- setTimeout(attemptReturn,1200);
+
+async function save(pos){
+  const c=pos.coords;
+
+  const body=new URLSearchParams();
+  body.set('action','save_location');
+  if(shortCode) body.set('code',shortCode); else body.set('token',token);
+  body.set('latitude',String(c.latitude));
+  body.set('longitude',String(c.longitude));
+  body.set('accuracy',String(c.accuracy ?? ''));
+  body.set('altitude',String(c.altitude ?? ''));
+  body.set('heading',String(c.heading ?? ''));
+  body.set('speed',String(c.speed ?? ''));
+  body.set('client_time',new Date().toISOString());
+  body.set('user_agent',navigator.userAgent);
+
+  showResult(c.latitude,c.longitude,Number(c.accuracy));
+  st('✅ Đã lấy GPS. Đang gửi về ForestryOS...');
+
+  btn.disabled=true;
+  btn.innerHTML='✅ ĐÃ NHẬN GPS';
+
+  /*
+   * KHÔNG await fetch.
+   * no-cors có thể giữ promise rất lâu trong Zalo webview,
+   * gây tình trạng nút "Đang gửi..." xoay liên tục dù backend
+   * đã nhận request.
+   *
+   * Gửi request rồi cho webview quay về Zalo sau một khoảng ngắn.
+   */
+  try{
+    fetch(API_URL,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{
+        'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
+      },
+      body:body.toString(),
+      keepalive:true
+    }).catch(()=>{});
+  }catch(e){}
+
+  /*
+   * Cho Apps Script thời gian xử lý và gửi tin xác nhận Bot.
+   */
+  setTimeout(()=>{
+    st('✅ Đã gửi vị trí. Đang quay lại Zalo...');
+    goBackToZalo();
+  },1500);
 }
+
 function fail(e){
- btn.disabled=false;btn.innerHTML='📍 THỬ LẠI';
- st(e.code===1?'❌ Chưa cấp quyền vị trí. Hãy bật Location cho trình duyệt.':e.code===2?'❌ Điện thoại chưa xác định được GPS. Hãy bật GPS và thử lại.':e.code===3?'⏱ GPS phản hồi quá chậm. Hãy thử lại nơi thoáng.':'❌ Không thể lấy vị trí.');
+  btn.disabled=false;
+  btn.innerHTML='📍 THỬ LẠI';
+
+  st(
+    e.code===1
+      ? '❌ Chưa cấp quyền vị trí. Hãy bật Location cho trình duyệt.'
+      : e.code===2
+        ? '❌ Chưa xác định được GPS. Hãy bật GPS và thử lại.'
+        : e.code===3
+          ? '⏱ GPS phản hồi quá chậm. Hãy thử lại nơi thoáng.'
+          : '❌ Không thể lấy vị trí.'
+  );
 }
+
 function getLocation(){
- if(!token){st('⚠️ Link GPS không có token. Hãy mở link do Bot gửi.');return;}
- if(!navigator.geolocation){st('❌ Trình duyệt không hỗ trợ GPS.');return;}
- btn.disabled=true;btn.innerHTML='<span class="spin"></span>ĐANG XÁC ĐỊNH...';st('📡 Đang yêu cầu GPS từ điện thoại...');
- navigator.geolocation.getCurrentPosition(save,fail,{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  if(!token && !shortCode){
+    st('⚠️ Link GPS không có token. Hãy mở link do Bot gửi.');
+    return;
+  }
+
+  if(!navigator.geolocation){
+    st('❌ Trình duyệt không hỗ trợ GPS.');
+    return;
+  }
+
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span>ĐANG XÁC ĐỊNH...';
+  st('📡 Đang yêu cầu GPS từ điện thoại...');
+
+  navigator.geolocation.getCurrentPosition(
+    save,
+    fail,
+    {
+      enableHighAccuracy:true,
+      timeout:20000,
+      maximumAge:0
+    }
+  );
 }
+
 btn.addEventListener('click',getLocation);
-if(!token){btn.disabled=true;st('⚠️ Hãy mở link do Zalo Bot gửi để nhận token GPS.');}
+
+returnBtn.addEventListener('click',()=>{
+  returning=false;
+  try{
+    history.back();
+  }catch(e){}
+});
+
+if(!token && !shortCode){
+  btn.disabled=true;
+  st('⚠️ Hãy mở link do Zalo Bot gửi để nhận token GPS.');
+}
 </script>
 </body>
 </html>
