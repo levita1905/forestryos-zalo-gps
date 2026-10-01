@@ -30,6 +30,7 @@ button:disabled{opacity:.55}
 </style>
 </head>
 <body>
+<iframe id="gpsSubmitFrame" name="gpsSubmitFrame" style="display:none;"></iframe>
 <main class="wrap">
 <section class="card">
 <div class="icon">📍</div>
@@ -100,52 +101,73 @@ function goBackToZalo(){
 
 async function save(pos){
   const c=pos.coords;
+  const lat=Number(c.latitude);
+  const lng=Number(c.longitude);
+  const acc=Number(c.accuracy);
 
-  const body=new URLSearchParams();
-  body.set('action','save_location');
-  if(shortCode) body.set('code',shortCode); else body.set('token',token);
-  body.set('latitude',String(c.latitude));
-  body.set('longitude',String(c.longitude));
-  body.set('accuracy',String(c.accuracy ?? ''));
-  body.set('altitude',String(c.altitude ?? ''));
-  body.set('heading',String(c.heading ?? ''));
-  body.set('speed',String(c.speed ?? ''));
-  body.set('client_time',new Date().toISOString());
-  body.set('user_agent',navigator.userAgent);
-
-  showResult(c.latitude,c.longitude,Number(c.accuracy));
-  st('✅ Đã lấy GPS. Đang gửi về ForestryOS...');
+  showResult(lat,lng,Number.isFinite(acc)?acc:NaN);
 
   btn.disabled=true;
   btn.innerHTML='✅ ĐÃ NHẬN GPS';
+  st('✅ Đã lấy GPS.<br>Đang gửi về ForestryOS...');
 
   /*
-   * KHÔNG await fetch.
-   * no-cors có thể giữ promise rất lâu trong Zalo webview,
-   * gây tình trạng nút "Đang gửi..." xoay liên tục dù backend
-   * đã nhận request.
+   * Dùng FORM POST thay vì fetch(no-cors).
    *
-   * Gửi request rồi cho webview quay về Zalo sau một khoảng ngắn.
+   * Lý do:
+   * - HTML form POST không bị CORS chặn.
+   * - Apps Script Web App có thể redirect /exec;
+   *   trình duyệt vẫn tiếp tục submit trong iframe ẩn.
+   * - Không phụ thuộc vào việc đọc response.
+   * - Ổn định hơn trong Zalo in-app browser khi trang sắp history.back().
    */
   try{
-    fetch(API_URL,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{
-        'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'
-      },
-      body:body.toString(),
-      keepalive:true
-    }).catch(()=>{});
-  }catch(e){}
+    const form=document.createElement('form');
+    form.method='POST';
+    form.action=API_URL;
+    form.target='gpsSubmitFrame';
+    form.style.display='none';
 
-  /*
-   * Cho Apps Script thời gian xử lý và gửi tin xác nhận Bot.
-   */
-  setTimeout(()=>{
-    st('✅ Đã gửi vị trí. Đang quay lại Zalo...');
-    goBackToZalo();
-  },1500);
+    const fields={
+      action:'save_location',
+      code:shortCode,
+      token:token,
+      latitude:String(lat),
+      longitude:String(lng),
+      accuracy:String(c.accuracy ?? ''),
+      altitude:String(c.altitude ?? ''),
+      heading:String(c.heading ?? ''),
+      speed:String(c.speed ?? ''),
+      client_time:new Date().toISOString(),
+      user_agent:navigator.userAgent
+    };
+
+    Object.keys(fields).forEach(function(name){
+      const input=document.createElement('input');
+      input.type='hidden';
+      input.name=name;
+      input.value=fields[name] ?? '';
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+    /*
+     * Không quay về quá sớm.
+     * Cho request vượt qua redirect của Apps Script.
+     */
+    setTimeout(function(){
+      st('✅ Đã gửi vị trí. Đang quay lại Zalo...');
+      goBackToZalo();
+    },2200);
+
+  }catch(err){
+    console.error('GPS FORM POST ERROR',err);
+    btn.disabled=false;
+    btn.innerHTML='📍 THỬ LẠI';
+    st('❌ Không gửi được GPS về hệ thống. Hãy thử lại.');
+  }
 }
 
 function fail(e){
@@ -165,7 +187,7 @@ function fail(e){
 
 function getLocation(){
   if(!token && !shortCode){
-    st('⚠️ Link GPS không có token. Hãy mở link do Bot gửi.');
+    st('⚠️ Link GPS không có mã xác nhận. Hãy mở đúng link do Bot gửi.');
     return;
   }
 
@@ -200,7 +222,7 @@ returnBtn.addEventListener('click',()=>{
 
 if(!token && !shortCode){
   btn.disabled=true;
-  st('⚠️ Hãy mở link do Zalo Bot gửi để nhận token GPS.');
+  st('⚠️ Hãy mở link do Zalo Bot gửi để nhận mã GPS.');
 }
 </script>
 </body>
